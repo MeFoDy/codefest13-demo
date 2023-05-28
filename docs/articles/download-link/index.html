@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html class="page" lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>
+            Link to download | 
+        </title>
+
+        <meta name="description" content="A simple way to create a link to save the file.">
+
+        
+        
+        
+
+        <link rel="stylesheet" href="/styles/style.css">
+        <link rel="stylesheet" href="/styles/dark.css" media="(prefers-color-scheme: dark)">
+    </head>
+    <body class="page__body">
+
+        <header class="header">
+    <a href="/" class="header__link">
+        Blog
+    </a>
+
+    <nav class="site-nav">
+        <ul class="site-nav__list">
+            <li class="site-nav__item">
+                <a href="/podcast/">Web Standards</a>
+            </li>
+            <li class="site-nav__item">
+                <a href="/articles/">Articles</a>
+            </li>
+        </ul>
+    </nav>
+</header>
+
+        <main class="page__content">
+            <h1>Link to download</h1>
+
+<p>Sometimes I need to create a link that should show a system dialog to save the file. Browsers are pretty smart to open that dialog for some binaries, e.g. for archives or <code>*.exe</code>. But what if I want to download an image or some video?</p>
+<h2><code>Content-Disposition</code> header</h2>
+<p>The most valid way is to add a <code>Content-Disposition</code> header on the server.</p>
+<pre class="language-html"><code class="language-html">Content-Disposition: attachment; filename=kitten.jpg</code></pre>
+<p>When your browser finds the <code>attachment</code> value, it starts to download the file, not to show it.</p>
+<p>But sometimes you can’t change any server configs, so we need a more browserish way to solve the problem.</p>
+<h2><code>download</code> attribute</h2>
+<p>The easiest way to do this is to add the <code>download</code> attribute to your link.</p>
+<p>If you just add it without any value, your browser will try to get the name of the file from its <code>Content-Disposition</code> header (yeah, it has high priority) or its path.</p>
+<pre class="language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>images/kitten.jpg<span class="token punctuation">"</span></span> <span class="token attr-name">download</span><span class="token punctuation">></span></span><br>    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>img</span> <span class="token attr-name">src</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>images/kitten-preview.jpg<span class="token punctuation">"</span></span> <span class="token attr-name">alt</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>Kitten photo preview<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span></code></pre>
+<p>Try it: <a href="./demo/kitten-pixel.jpg" download>demo link</a>.</p>
+<p>You can set some value to <code>download</code> if you want to change the default name. It can help when you have some strange auto-generated URL like <code>https://cdn/images/a1H5-st42-Av1f-rUles</code>.</p>
+<pre class="language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>images/1h24v9lj.jpg<span class="token punctuation">"</span></span> <span class="token attr-name">download</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>kitten<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><br>    Download<br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span></code></pre>
+<p>Try it: <a href="./demo/kitten-pixel.jpg" download="i-am-tiny">demo link</a>.</p>
+<p><strong>Important!</strong> All this attribute magic <a href="https://www.chromestatus.com/feature/4969697975992320">is not for cross-origin links</a>. You can’t control the stuff from cross-origin sources due to security issues.</p>
+<p>And remember that IE and old Safari are unaware of <code>download</code>. <a href="https://caniuse.com/download">Check it</a>.</p>
+<h2><code>blob:</code> and <code>data:</code></h2>
+<p>Another lifehack to help your users save pictures of kittens in a format convenient for them. If you use AVIF or WebP images on your site, it is a huge chance that no one will be able to save them on their computer or phone to view them later. More precisely, they can save the image, but they can’t view it. Very sad.</p>
+<p>To help them, use <code>data:</code> or <code>blob:</code> URLs inside the <code>href</code> attribute.</p>
+<p><strong>Step 1.</strong> Draw the image on a canvas.</p>
+<pre class="language-js"><code class="language-js"><span class="token keyword">const</span> canvas <span class="token operator">=</span> document<span class="token punctuation">.</span><span class="token function">getElementById</span><span class="token punctuation">(</span><span class="token string">'canvas'</span><span class="token punctuation">)</span><span class="token punctuation">;</span><br><span class="token keyword">const</span> ctx <span class="token operator">=</span> canvas<span class="token punctuation">.</span><span class="token function">getContext</span><span class="token punctuation">(</span><span class="token string">'2d'</span><span class="token punctuation">)</span><span class="token punctuation">;</span><br><span class="token keyword">const</span> image <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Image</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span><br>image<span class="token punctuation">.</span><span class="token function-variable function">onload</span> <span class="token operator">=</span> <span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span><br>    ctx<span class="token punctuation">.</span><span class="token function">drawImage</span><span class="token punctuation">(</span>image<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span><br><br>    <span class="token comment">// TODO: put the magic here</span><br><span class="token punctuation">}</span><span class="token punctuation">;</span><br>image<span class="token punctuation">.</span>src <span class="token operator">=</span> <span class="token string">'kitten-170.avif'</span><span class="token punctuation">;</span></code></pre>
+<p><strong>Step 2a.</strong> Save the image as a blob to the link <code>href</code>.</p>
+<pre class="language-js"><code class="language-js"><span class="token keyword">const</span> blobLink <span class="token operator">=</span> document<span class="token punctuation">.</span><span class="token function">getElementById</span><span class="token punctuation">(</span><span class="token string">'blob-link'</span><span class="token punctuation">)</span><span class="token punctuation">;</span><br><br>canvas<span class="token punctuation">.</span><span class="token function">toBlob</span><span class="token punctuation">(</span><span class="token parameter">blob</span> <span class="token operator">=></span> <span class="token punctuation">{</span><br>    <span class="token keyword">const</span> blobUrl <span class="token operator">=</span> <span class="token constant">URL</span><span class="token punctuation">.</span><span class="token function">createObjectURL</span><span class="token punctuation">(</span>blob<span class="token punctuation">)</span><span class="token punctuation">;</span><br>    blobLink<span class="token punctuation">.</span>href <span class="token operator">=</span> blobUrl<span class="token punctuation">;</span><br><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token string">'image/jpeg'</span><span class="token punctuation">,</span> <span class="token number">0.9</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<p>Yes, I can save AVIF as JPEG. Cool, right? The user downloaded just 4 KB AVIF from a server and got his 13 KB JPEG on a client!</p>
+<p><strong>Step 2b.</strong> Save the image as a data to the link <code>href</code>.</p>
+<p>Some browsers can’t use blobs, so you can help them with data-urls.</p>
+<pre class="language-js"><code class="language-js"><span class="token keyword">const</span> dataLink <span class="token operator">=</span> document<span class="token punctuation">.</span><span class="token function">getElementById</span><span class="token punctuation">(</span><span class="token string">'data-link'</span><span class="token punctuation">)</span><span class="token punctuation">;</span><br><br>dataLink<span class="token punctuation">.</span>href <span class="token operator">=</span> canvas<span class="token punctuation">.</span><span class="token function">toDataURL</span><span class="token punctuation">(</span><span class="token string">'image/jpeg'</span><span class="token punctuation">,</span> <span class="token number">0.9</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<p>It’s even easier, but not so performant.</p>
+<p>You can play with the full demo here:</p>
+<ul>
+<li><a href="./demo/index.html">Demo</a></li>
+<li><a href="https://github.com/MeFoDy/mefody.dev/blob/main/src/articles/download-link/demo/index.html">Source code</a></li>
+</ul>
+<h2>Sources</h2>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/MIME#Content-Disposition">Wiki: Content-Disposition</a></li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/A">MDN: A</a></li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toDataURL">MDN: canvas.toDataURL</a></li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob">MDN: canvas.toBlob</a></li>
+</ul>
+
+        </main>
+    </body>
+</html>

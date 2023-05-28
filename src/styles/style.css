@@ -1,0 +1,37 @@
+body {
+    background: lightblue;
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    padding: 2em;
+}
+
+.header {
+    display: grid;
+    grid-template-columns: 1fr max-content;
+}
+
+.collection__list {
+    display: block;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.collection__item {
+    display: block;
+    background-color: white;
+    border-radius: 1em;
+    padding: 2em;
+    margin-bottom: 2em;
+}
+
+.collection__item h1 {
+    margin: 0;
+    text-wrap: balance;
+}
+
+.article {
+    background-color: white;
+    border-radius: 2em;
+    padding: 2em;
+}

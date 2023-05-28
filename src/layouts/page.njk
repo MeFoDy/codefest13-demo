@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html class="page" lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>
+            {{ title }}{% if not isIndex %} | {{ site.title }}{% endif %}
+        </title>
+
+        <meta name="description" content="{{ description or site.description }}">
+
+        {# {% include 'meta-open-graph.njk' %} #}
+        {# {% include 'meta-webmentions.njk' %} #}
+
+        <link rel="stylesheet" href="/styles/style.css">
+    </head>
+    <body class="page__body">
+
+        {% include 'header.njk' %}
+
+        <main class="page__content">
+            {{ content | safe }}
+        </main>
+    </body>
+</html>

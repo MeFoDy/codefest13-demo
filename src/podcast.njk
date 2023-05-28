@@ -1,0 +1,18 @@
+---
+layout: page.njk
+title: Веб-стандарты
+---
+
+<div class="collection">
+    <ul class="collection__list">
+        {%- for item in webStandards | sortByDate | reverse | limit(5) -%}
+            <li class="collection__item">
+                <h1 class="collection__item-title">
+                    <a href="{{ item.link }}" class="collection__item-link">{{ item['itunes:episode'] }}.
+                        {{ item.title }}</a>
+                </h1>
+                {{ item.description | safe }}
+            </li>
+        {%- endfor -%}
+    </ul>
+</div>

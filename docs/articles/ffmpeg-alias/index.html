@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html class="page" lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>
+            Easy video converting for the web | 
+        </title>
+
+        <meta name="description" content="Using of Bash to make video converting more comfortable.">
+
+        
+        
+        
+
+        <link rel="stylesheet" href="/styles/style.css">
+        <link rel="stylesheet" href="/styles/dark.css" media="(prefers-color-scheme: dark)">
+    </head>
+    <body class="page__body">
+
+        <header class="header">
+    <a href="/" class="header__link">
+        Blog
+    </a>
+
+    <nav class="site-nav">
+        <ul class="site-nav__list">
+            <li class="site-nav__item">
+                <a href="/podcast/">Web Standards</a>
+            </li>
+            <li class="site-nav__item">
+                <a href="/articles/">Articles</a>
+            </li>
+        </ul>
+    </nav>
+</header>
+
+        <main class="page__content">
+            <h1>Easy video converting for the web</h1>
+
+<p>I want to keep my blog performant. So when there are some videos in an article, I need to convert videos to modern formats to make them smaller.</p>
+<h2>HTML</h2>
+<p>Andrey Sitnik wrote a <a href="https://evilmartians.com/chronicles/better-web-video-with-av1-codec">great article</a> about video codecs for the web. I customized the snippet from the article for my needs.</p>
+<pre class="language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>video</span> <span class="token attr-name">width</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>600<span class="token punctuation">"</span></span> <span class="token attr-name">height</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>400<span class="token punctuation">"</span></span> <span class="token attr-name">controls</span> <span class="token attr-name">muted</span> <span class="token attr-name">playsinline</span> <span class="token attr-name">preload</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>metadata<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><br>    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>source</span> <span class="token attr-name">src</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>video.av1.mp4<span class="token punctuation">"</span></span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>video/mp4; codecs=av01.0.05M.08<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><br>    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>source</span> <span class="token attr-name">src</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>video.h264.mp4<span class="token punctuation">"</span></span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>video/mp4<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>video</span><span class="token punctuation">></span></span></code></pre>
+<p>This snippet works great in modern Chrome and Firefox <a href="https://caniuse.com/av1">with AV1-codec supported</a>, falling back to the bulletproof H264-codec for other browsers.</p>
+<h2>ffmpeg</h2>
+<p>To convert source videos for the web you can use <code>ffmpeg</code>. For macOS, it’s just <code>brew install ffmpeg</code>. This is a really great tool to work with videos. But its synopsis is not so easy to remember. And it’s not copypastable because of the strict order of arguments. For example, here is a snippet for converting to H264.</p>
+<pre class="language-bash"><code class="language-bash">ffmpeg <span class="token parameter variable">-i</span> input.mov <span class="token parameter variable">-map_metadata</span> <span class="token parameter variable">-1</span> <span class="token parameter variable">-an</span> <span class="token parameter variable">-c:v</span> libx264 <span class="token punctuation">\</span><br><span class="token parameter variable">-crf</span> <span class="token number">24</span> <span class="token parameter variable">-preset</span> veryslow <span class="token parameter variable">-profile:v</span> main <span class="token parameter variable">-pix_fmt</span> yuv420p <span class="token punctuation">\</span><br><span class="token parameter variable">-movflags</span> +faststart <span class="token parameter variable">-vf</span> <span class="token string">"scale=trunc(iw/2)*2:trunc(ih/2)*2"</span> <span class="token punctuation">\</span><br>output.h264.mp4</code></pre>
+<p>I don’t want to remember it!</p>
+<h2>Bash aliases</h2>
+<p>Let’s make aliases for Bash. Open your <code>~/.bashrc</code> (or <code>~/.zshrc</code> if you use ZSH instead of Bash). Add the next code to the end of the file.</p>
+<pre class="language-bash"><code class="language-bash"><span class="token keyword">function</span> <span class="token function-name function">convert-to-h264</span> <span class="token punctuation">{</span><br>    <span class="token keyword">if</span> <span class="token punctuation">[</span><span class="token punctuation">[</span> <span class="token variable">$2</span> <span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">;</span><br>        <span class="token keyword">then</span> <span class="token assign-left variable">output</span><span class="token operator">=</span><span class="token variable">$2</span><br>        <span class="token keyword">else</span> <span class="token assign-left variable">output</span><span class="token operator">=</span><span class="token variable">${1<span class="token operator">%</span>.*}</span>.h264.mp4<br>    <span class="token keyword">fi</span><br><br>    ffmpeg <span class="token parameter variable">-i</span> <span class="token variable">$1</span> <span class="token parameter variable">-map_metadata</span> <span class="token parameter variable">-1</span> <span class="token parameter variable">-an</span> <span class="token parameter variable">-c:v</span> libx264 <span class="token punctuation">\</span><br>    <span class="token parameter variable">-crf</span> <span class="token number">24</span> <span class="token parameter variable">-preset</span> veryslow <span class="token parameter variable">-profile:v</span> main <span class="token parameter variable">-pix_fmt</span> yuv420p <span class="token punctuation">\</span><br>    <span class="token parameter variable">-movflags</span> +faststart <span class="token parameter variable">-vf</span> <span class="token string">"scale=trunc(iw/2)*2:trunc(ih/2)*2"</span> <span class="token punctuation">\</span><br>    <span class="token variable">$output</span><br><span class="token punctuation">}</span></code></pre>
+<p>Save the file, then apply it with <code>source ~/.bashrc</code> (or <code>source ~/.zshrc</code> for ZSH). Voila, you can use new alias to easily convert your videos.</p>
+<pre class="language-bash"><code class="language-bash">convert-to-h264 input.mov <span class="token comment"># converts to input.h264.mp4 by default</span><br><span class="token comment"># or</span><br>convert-to-h264 input.mov output.mp4</code></pre>
+<p>I also have other aliases for my blog videos.</p>
+<pre class="language-bash"><code class="language-bash"><span class="token keyword">function</span> <span class="token function-name function">convert-to-av1</span> <span class="token punctuation">{</span><br>    <span class="token keyword">if</span> <span class="token punctuation">[</span><span class="token punctuation">[</span> <span class="token variable">$2</span> <span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">;</span><br>        <span class="token keyword">then</span> <span class="token assign-left variable">output</span><span class="token operator">=</span><span class="token variable">$2</span><br>        <span class="token keyword">else</span> <span class="token assign-left variable">output</span><span class="token operator">=</span><span class="token variable">${1<span class="token operator">%</span>.*}</span>.av1.mp4<br>    <span class="token keyword">fi</span><br><br>    ffmpeg <span class="token parameter variable">-i</span> <span class="token variable">$1</span> <span class="token parameter variable">-map_metadata</span> <span class="token parameter variable">-1</span> <span class="token parameter variable">-an</span> <span class="token parameter variable">-c:v</span> libaom-av1 <span class="token parameter variable">-crf</span> <span class="token number">50</span> <span class="token parameter variable">-b:v</span> <span class="token number">0</span> <span class="token punctuation">\</span><br>    <span class="token parameter variable">-pix_fmt</span> yuv420p <span class="token parameter variable">-movflags</span> +faststart <span class="token parameter variable">-vf</span> <span class="token string">"scale=trunc(iw/2)*2:trunc(ih/2)*2"</span> <span class="token punctuation">\</span><br>    <span class="token parameter variable">-strict</span> experimental -cpu-used <span class="token number">1</span> <span class="token punctuation">\</span><br>    <span class="token variable">$output</span><br><span class="token punctuation">}</span><br><br><span class="token keyword">function</span> <span class="token function-name function">resize-to-width</span> <span class="token punctuation">{</span><br>    <span class="token keyword">if</span> <span class="token punctuation">[</span><span class="token punctuation">[</span> <span class="token variable">$3</span> <span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">;</span><br>        <span class="token keyword">then</span> <span class="token assign-left variable">output</span><span class="token operator">=</span><span class="token variable">$3</span><br>        <span class="token keyword">else</span> <span class="token assign-left variable">output</span><span class="token operator">=</span><span class="token variable">${1<span class="token operator">%</span>.*}</span>@<span class="token variable">$2</span><span class="token builtin class-name">.</span><span class="token variable">${1<span class="token operator">##</span>*.}</span><br>    <span class="token keyword">fi</span><br><br>    ffmpeg <span class="token parameter variable">-i</span> <span class="token variable">$1</span> <span class="token parameter variable">-vf</span> <span class="token string">"scale="</span><span class="token variable">$2</span><span class="token string">":trunc(ow/a/2)*2"</span> <span class="token variable">$output</span><br><span class="token punctuation">}</span></code></pre>
+<p>So my workflow with videos usually consists of three commands.</p>
+<pre class="language-bash"><code class="language-bash">resize-to-width source.mov <span class="token number">1200</span> video.mov<br>convert-to-h264 video.mov<br>convert-to-av1 video.mov</code></pre>
+<h2>Sources</h2>
+<ul>
+<li><a href="https://evilmartians.com/chronicles/better-web-video-with-av1-codec">Better web video with AV1 codec</a></li>
+<li><a href="https://ffmpeg.org/documentation.html">FFmpeg Documentation</a></li>
+<li><a href="https://tldp.org/HOWTO/Bash-Prog-Intro-HOWTO-8.html">HOWTO: Bash functions</a></li>
+</ul>
+
+        </main>
+    </body>
+</html>
